@@ -8,8 +8,7 @@ import json
 
 
 token_and_postroom = unicode(sys.argv[1], encoding='utf-8')
-chatwork_api_token = token_and_postroom.split(u":")[0]
-post_to = token_and_postroom.split(u":")[1]
+chatwork_api_token, post_to = token_and_postroom.split(u":")
 
 post_subject = unicode(sys.argv[2], encoding='utf-8')
 post_message = unicode(sys.argv[3], encoding='utf-8')
