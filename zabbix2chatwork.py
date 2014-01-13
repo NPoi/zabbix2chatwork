@@ -6,13 +6,16 @@ zabbix2chatwork
 """
 
 __auther__ = "Daisuke Nakahara <npoi.japan@gmail.com>"
-__version__ ="0.0.1"
+__version__ = "0.0.1"
 __date__ = "11 Jan 2014"
 
 import sys
 import urllib
 import urllib2
-import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 
 class RoomNameError(Exception):
@@ -46,7 +49,7 @@ def getRoomIdByName(search_name):
         else:
             continue
 
-    raise RoomNameError
+    raise RoomNameError(search_name)
 
 
 def postMessage(room_id, subject, message):
@@ -56,11 +59,11 @@ def postMessage(room_id, subject, message):
     room_id -- チャットのID
     subject -- Zabbixアラートの題名
     message -- Zabbixアラートの本文
-    
+
     Return arguments:
     json.loads(response)  -- ChatWork APIからのレスポンス
     """
-    
+
     url = 'https://api.chatwork.com/v1/rooms/%s/messages' % room_id
 
     subject = subject.encode('utf-8')
@@ -80,18 +83,17 @@ u"""
 """
 
 # 入力
-# UTF-8として受け取って例外吐いたらcp932として受け取る（Windows対策）
 try:
     token_and_postroom = unicode(sys.argv[1], encoding='utf-8')
     post_subject = unicode(sys.argv[2], encoding='utf-8')
     post_message = unicode(sys.argv[3], encoding='utf-8')
-except UnicodeDecodeError:
+except UnicodeDecodeError:  # UTF-8として受け取って例外吐いたらcp932として受け取る（Windows対策）
     token_and_postroom = unicode(sys.argv[1], encoding='cp932')
     post_subject = unicode(sys.argv[2], encoding='cp932')
     post_message = unicode(sys.argv[3], encoding='cp932')
 
 chatwork_api_token, post_to = token_and_postroom.split(u":")
-https_header = {'X-ChatWorkToken': chatwork_api_token}
+https_header = {'X-ChatWorkToken': str(chatwork_api_token)}
 
 room_id = getRoomIdByName(post_to)
 postMessage(room_id, post_subject, post_message)
