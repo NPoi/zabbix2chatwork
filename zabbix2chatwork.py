@@ -6,8 +6,8 @@ zabbix2chatwork
 """
 
 __author__ = "Daisuke Nakahara <npoi.japan@gmail.com>"
-__version__ = "0.0.1"
-__date__ = "11 Jan 2014"
+__version__ = "0.0.2"
+__date__ = "12 Feb 2014"
 
 import sys
 import urllib
