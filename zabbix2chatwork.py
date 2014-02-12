@@ -6,12 +6,13 @@ zabbix2chatwork
 """
 
 __author__ = "Daisuke Nakahara <npoi.japan@gmail.com>"
-__version__ = "0.0.1"
-__date__ = "11 Jan 2014"
+__version__ = "0.0.2"
+__date__ = "12 Feb 2014"
 
 import sys
 import urllib
 import urllib2
+import re
 
 try:
     import simplejson as json
@@ -40,9 +41,7 @@ def getRoomIdByName(search_name):
     url = 'https://api.chatwork.com/v1/rooms'
     req = urllib2.Request(url, None, https_header)
 
-    response = urllib2.urlopen(req).read()
-
-    rooms = json.loads(response)
+    rooms = json.loads(urllib2.urlopen(req).read())
 
     for room in rooms:
         if unicode(room['name']) == unicode(search_name):
@@ -76,8 +75,19 @@ def postMessage(room_id, subject, message):
                           https_header)
 
     response = urllib2.urlopen(req).read()
+
     return json.loads(response)
 
+
+def getRooms():
+    """自分の部屋一覧を取得
+    """
+    url = 'https://api.chatwork.com/v1/rooms'
+    req = urllib2.Request(url, None, https_header)
+
+    my_rooms = json.loads(urllib2.urlopen(req).read())
+
+    return [int(room['room_id']) for room in my_rooms]
 
 u"""
 実際の処理
@@ -96,7 +106,11 @@ except UnicodeDecodeError:  # UTF-8として受け取って例外吐いたらcp9
 chatwork_api_token, post_to = token_and_postroom.split(u":")
 https_header = {'X-ChatWorkToken': str(chatwork_api_token)}
 
-room_id = getRoomIdByName(post_to)
+if re.search(u"^[0-9]+$", post_to) and int(post_to) in getRooms():
+    room_id = post_to
+else:
+    room_id = getRoomIdByName(post_to)
+
 postMessage(room_id, post_subject, post_message)
 
 sys.exit()
