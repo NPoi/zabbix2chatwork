@@ -6,8 +6,8 @@ zabbix2chatwork
 """
 
 __author__ = "Daisuke Nakahara <npoi.japan@gmail.com>"
-__version__ = "0.0.3"
-__date__ = "12 May 2014"
+__version__ = "0.0.4"
+__date__ = "19 January 2015"
 
 import sys
 import urllib
@@ -79,7 +79,7 @@ def postMessage(room_id, subject, message):
 
     subject = subject.encode('utf-8')
     message = message.encode('utf-8')
-    message_body = urllib.quote_plus("[info][title]%s[/title]%s[/info]" % (subject, message))
+    message_body = urllib.quote_plus("[info][title]%s[/title][code]%s[/code][/info]" % (subject, message))
 
     req = urllib2.Request(url,
                           "body=%s" % message_body,
