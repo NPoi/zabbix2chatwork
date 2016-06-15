@@ -29,7 +29,7 @@ class RoomNameError(Exception):
         return "Room name '%s' not found in your ChatWork account." % (self.room_name)
 
 
-def getRoomIdByName(search_name):
+def getRoomIdByName(search_name, https_header):
     """自分のアカウントにある部屋を文字列から検索してIDを返す関数
 
         Keyword arguments:
@@ -49,10 +49,9 @@ def getRoomIdByName(search_name):
     except TypeError as e:
         sys.stderr.write("JSON encode error.")
         sys.exit()
-    except URLError as e:
+    except urllib2.URLError as e:
         sys.stderr.write(e.code)
         sys.exit()
-
 
     for room in rooms:
         if unicode(room['name']) == unicode(search_name):
@@ -63,7 +62,7 @@ def getRoomIdByName(search_name):
     raise RoomNameError(search_name)
 
 
-def postMessage(room_id, subject, message):
+def postMessage(room_id, subject, message, https_header):
     """チャットワークに投稿する関数
 
     Keyword arguments:
@@ -85,13 +84,12 @@ def postMessage(room_id, subject, message):
                           "body=%s" % message_body,
                           https_header)
 
-
     try:
         response = urllib2.urlopen(req).read()
-    except URLError as e:
+    except urllib2.URLError as e:
         sys.stderr.write(str(e.code))
         sys.exit()
-         
+
     try:
         return json.loads(response)
     except ValueError as e:
@@ -102,7 +100,7 @@ def postMessage(room_id, subject, message):
         sys.exit()
 
 
-def getRooms():
+def getRooms(https_header):
     """自分の部屋一覧を取得
     """
     url = 'https://api.chatwork.com/v1/rooms'
@@ -156,11 +154,11 @@ if __name__ == '__main__':
 
     https_header = {'X-ChatWorkToken': str(chatwork_api_token)}
 
-    if re.search(u"^[0-9]+$", post_to) and int(post_to) in getRooms():
+    if re.search(u"^[0-9]+$", post_to) and int(post_to) in getRooms(https_header):
         room_id = post_to
     else:
-        room_id = getRoomIdByName(post_to)
+        room_id = getRoomIdByName(post_to, https_header)
 
-    postMessage(room_id, post_subject, post_message)
+    postMessage(room_id, post_subject, post_message, https_header)
 
     sys.exit()
