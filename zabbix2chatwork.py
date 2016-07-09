@@ -11,8 +11,8 @@ import urllib2
 import re
 
 __author__ = "Daisuke Nakahara <npoi.japan@gmail.com>"
-__version__ = "0.0.4"
-__date__ = "19 January 2015"
+__version__ = "0.0.5"
+__date__ = "9 July 2016"
 
 
 try:
