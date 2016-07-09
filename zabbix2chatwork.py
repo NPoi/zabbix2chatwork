@@ -30,7 +30,7 @@ class RoomNameError(Exception):
         return "Room name '{0}' not found in your ChatWork account.".format(self.room_name)
 
 
-def getRoomIdByName(search_name, http_header):
+def getRoomIdByName(search_name, https_header):
     """自分のアカウントにある部屋を文字列から検索してIDを返す関数
 
         Keyword arguments:
@@ -63,7 +63,7 @@ def getRoomIdByName(search_name, http_header):
     raise RoomNameError(search_name)
 
 
-def postMessage(room_id, subject, message, http_header):
+def postMessage(room_id, subject, message, https_header):
     """チャットワークに投稿する関数
 
     Keyword arguments:
@@ -101,7 +101,7 @@ def postMessage(room_id, subject, message, http_header):
         sys.exit()
 
 
-def getRooms(url, http_header):
+def getRooms(url, https_header):
     u"""自分の部屋一覧を取得
     """
     url = 'https://api.chatwork.com/v1/rooms'
