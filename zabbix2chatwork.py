@@ -5,14 +5,15 @@
 zabbix2chatwork
 """
 
-__author__ = "Daisuke Nakahara <npoi.japan@gmail.com>"
-__version__ = "0.0.4"
-__date__ = "19 January 2015"
-
 import sys
 import urllib
 import urllib2
 import re
+
+__author__ = "Daisuke Nakahara <npoi.japan@gmail.com>"
+__version__ = "0.0.4"
+__date__ = "19 January 2015"
+
 
 try:
     import simplejson as json
@@ -26,10 +27,10 @@ class RoomNameError(Exception):
         self.room_name = room_name
 
     def __str__(self):
-        return "Room name '%s' not found in your ChatWork account." % (self.room_name)
+        return "Room name '{0}' not found in your ChatWork account.".format(self.room_name)
 
 
-def getRoomIdByName(search_name):
+def getRoomIdByName(search_name, http_header):
     """自分のアカウントにある部屋を文字列から検索してIDを返す関数
 
         Keyword arguments:
@@ -53,7 +54,6 @@ def getRoomIdByName(search_name):
         sys.stderr.write(e.code)
         sys.exit()
 
-
     for room in rooms:
         if unicode(room['name']) == unicode(search_name):
             return room['room_id']
@@ -63,7 +63,7 @@ def getRoomIdByName(search_name):
     raise RoomNameError(search_name)
 
 
-def postMessage(room_id, subject, message):
+def postMessage(room_id, subject, message, http_header):
     """チャットワークに投稿する関数
 
     Keyword arguments:
@@ -75,23 +75,22 @@ def postMessage(room_id, subject, message):
     json.loads(response)  -- ChatWork APIからのレスポンス
     """
 
-    url = 'https://api.chatwork.com/v1/rooms/%s/messages' % room_id
+    url = 'https://api.chatwork.com/v1/rooms/{0}/messages'.format(room_id)
 
     subject = subject.encode('utf-8')
     message = message.encode('utf-8')
-    message_body = urllib.quote_plus("[info][title]%s[/title][code]%s[/code][/info]" % (subject, message))
+    message_body = urllib.quote_plus("[info][title]{0}[/title][code]{1}[/code][/info]".format(subject, message))
 
     req = urllib2.Request(url,
-                          "body=%s" % message_body,
+                          "body={0}".fortat(message_body),
                           https_header)
-
 
     try:
         response = urllib2.urlopen(req).read()
     except URLError as e:
         sys.stderr.write(str(e.code))
         sys.exit()
-         
+
     try:
         return json.loads(response)
     except ValueError as e:
@@ -102,18 +101,18 @@ def postMessage(room_id, subject, message):
         sys.exit()
 
 
-def getRooms():
-    """自分の部屋一覧を取得
+def getRooms(url, http_header):
+    u"""自分の部屋一覧を取得
     """
     url = 'https://api.chatwork.com/v1/rooms'
     req = urllib2.Request(url, None, https_header)
 
     try:
         my_rooms = json.loads(urllib2.urlopen(req).read())
-    except ValueError as e:
+    except ValueError:
         sys.stderr.write("JSON encode error.")
         sys.exit()
-    except TypeError as e:
+    except TypeError:
         sys.stderr.write("JSON encode error.")
         sys.exit()
 
@@ -156,11 +155,11 @@ if __name__ == '__main__':
 
     https_header = {'X-ChatWorkToken': str(chatwork_api_token)}
 
-    if re.search(u"^[0-9]+$", post_to) and int(post_to) in getRooms():
+    if re.search(u"^[0-9]+$", post_to) and int(post_to) in getRooms(https_header):
         room_id = post_to
     else:
-        room_id = getRoomIdByName(post_to)
+        room_id = getRoomIdByName(post_to, https_header)
 
-    postMessage(room_id, post_subject, post_message)
+    postMessage(room_id, post_subject, post_message, https_header)
 
     sys.exit()
