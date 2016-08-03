@@ -63,23 +63,48 @@ def getRoomIdByName(search_name, https_header):
     raise RoomNameError(search_name)
 
 
-def postMessage(room_id, subject, message, https_header):
+def formNotify(users):
+    notif_txt = ""
+    for user in users:
+        notif_txt = notif_txt + "[To:{0}]".format(str(user))
+
+    return notif_txt
+
+
+def postMessage(room_id, subject, message, https_header, notify_user=None):
     """チャットワークに投稿する関数
 
     Keyword arguments:
     room_id -- チャットのID
     subject -- Zabbixアラートの題名
     message -- Zabbixアラートの本文
+    notify_user -- 通知する人のIDのリスト
 
     Return arguments:
     json.loads(response)  -- ChatWork APIからのレスポンス
     """
 
+    if "Trigger severity: High" in message or "Trigger severity: Disaster" in message:
+        notif_flag = True
+    else:
+        notif_flag = False
+
     url = 'https://api.chatwork.com/v1/rooms/{0}/messages'.format(room_id)
+
+    if notify_user is None:
+        notif_txt = None
+    else:
+        notif_txt = formNotify(notify_user)
 
     subject = subject.encode('utf-8')
     message = message.encode('utf-8')
-    message_body = urllib.quote_plus("[info][title]{0}[/title][code]{1}[/code][/info]".format(subject, message))
+
+    if notif_txt is None or notif_flag is False:
+        formated_message = "[info][title]{0}[/title][code]{1}[/code][/info]".format(subject, message)
+    else:
+        formated_message = "{0}[info][title]{1}[/title][code]{2}[/code][/info]".format(notif_txt, subject, message)
+
+    message_body = urllib.quote_plus(formated_message)
 
     req = urllib2.Request(url,
                           "body={0}".format(message_body),
@@ -124,9 +149,7 @@ def getRooms(https_header):
 
 
 def main():
-    u"""
-    実際の処理
-    """
+    u"""実際の処理"""
     try:
         token_and_postroom = unicode(sys.argv[1], encoding='utf-8')
         post_subject = unicode(sys.argv[2], encoding='utf-8')
@@ -150,7 +173,8 @@ def main():
                 sys.stderr.write("Argument charset error.")
                 sys.exit()
 
-    chatwork_api_token, post_to = token_and_postroom.split(u":")
+    chatwork_api_token, post_to, notify_user = token_and_postroom.split(u":")
+    notify_user = notify_user.split(u",")
 
     https_header = {'X-ChatWorkToken': str(chatwork_api_token)}
 
@@ -159,7 +183,7 @@ def main():
     else:
         room_id = getRoomIdByName(post_to, https_header)
 
-    postMessage(room_id, post_subject, post_message, https_header)
+    postMessage(room_id, post_subject, post_message, https_header, notify_user)
 
 
 if __name__ == '__main__':
