@@ -82,7 +82,7 @@ def postMessage(room_id, subject, message, https_header):
     message_body = urllib.quote_plus("[info][title]{0}[/title][code]{1}[/code][/info]".format(subject, message))
 
     req = urllib2.Request(url,
-                          "body={0}".fortat(message_body),
+                          "body={0}".format(message_body),
                           https_header)
 
     try:
@@ -101,7 +101,7 @@ def postMessage(room_id, subject, message, https_header):
         sys.exit()
 
 
-def getRooms(url, https_header):
+def getRooms(https_header):
     u"""自分の部屋一覧を取得
     """
     url = 'https://api.chatwork.com/v1/rooms'
@@ -122,12 +122,11 @@ def getRooms(url, https_header):
     else:
         return [room['room_id'] for room in my_rooms]
 
-u"""
-実際の処理
-"""
 
-if __name__ == '__main__':
-    # 入力
+def main():
+    u"""
+    実際の処理
+    """
     try:
         token_and_postroom = unicode(sys.argv[1], encoding='utf-8')
         post_subject = unicode(sys.argv[2], encoding='utf-8')
@@ -162,4 +161,6 @@ if __name__ == '__main__':
 
     postMessage(room_id, post_subject, post_message, https_header)
 
-    sys.exit()
+
+if __name__ == '__main__':
+    main()
